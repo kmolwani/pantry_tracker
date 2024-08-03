@@ -1,8 +1,8 @@
 'use client'
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { firestore } from "@/firebase";
-import { Box, Button, Modal, Stack, TextField, Typography } from "@mui/material";
+import { Box, Button, Modal, Stack, TextField, Typography, Snackbar } from "@mui/material";
 import { collection, getDoc, getDocs, query, setDoc, deleteDoc, doc } from "firebase/firestore";
 
 export default function Home() {
@@ -10,8 +10,10 @@ export default function Home() {
   const [inventory, setInventory] = useState([]);
   // state variable to add and remove stuff
   const [open, setOpen] = useState(false);
+  const [openMessage, setOpenMessage] = useState(false);
   // set item names
   const [itemName, setItemName] = useState('');
+  const [message, setMessage] = useState('');
 
   // fetch inventory from firebase; async becasue we don;t want firebase block out code when being fetched. 
   // This prevents website freezing
@@ -61,19 +63,43 @@ export default function Home() {
   }
 
   const handleOpen = () => setOpen(true)
+  const handleOpenMessage = async () => {
+    if (itemName) {
+      setMessage(itemName + ' Added ... ');
+    } else {
+      setMessage('');
+    }
+    setOpenMessage(true)
+  }
   const handleClose = () => setOpen(false)
+  const handleCloseMessage = () => setOpenMessage(false)
 
   useEffect(() => {
     updateInventory()
   }, []) // dependency list array empty because we only want this to execute once when page is loaded
 
-  const [results, setResults] = useState([]);
+  // adding focus to the textfield input area so the user doesn't have to manually click on it to enter text
+  const textFieldRef = useRef(null);
+  useEffect(() => {
+    if (open) {
+        const timer = setTimeout(() => {
+            if (textFieldRef.current) {
+                textFieldRef.current.focus();
+            }
+        }, 100); // Delay to ensure modal is fully rendered
+        return () => clearTimeout(timer);
+    }
+  }, [open]);
 
-  const handleSearch = async (query) => {
-    // Replace with your search logic
-    const response = await fetch(`/api/search?q=${query}`);
-    const data = await response.json();
-    setResults(data);
+  // adding functionality so the user can press enter and have the item added instead of clicking on the Add button
+  const addButtonRef = useRef(null);
+  const handleKeyDown = (event) => {
+    const timer = setTimeout(() => {
+      if (event.key === 'Enter') {
+        addButtonRef.current.click();
+      }
+    }, 100); // Delay to ensure modal is fully rendered
+    return () => clearTimeout(timer);
   };
 
   return (
@@ -85,6 +111,7 @@ export default function Home() {
       alignItems='center'
       flexDirection='column'
       gap={2}
+      bgcolor='#786'
     >
       <Modal open={open} onClose={handleClose}>
         <Box
@@ -108,19 +135,25 @@ export default function Home() {
             <TextField
               variant="outlined"
               fullWidth
+              inputRef={textFieldRef}
+              onKeyDown={handleKeyDown}
               focused="true"
+              placeholder="Add Item"
               value={itemName}
               // this allows to type in the text field
               onChange={(e) => {
                 setItemName(e.target.value)
               }}
-            ></TextField>
-            <Button variant="outlined" onClick={() => {
-              if (itemName != 0){
+            >
+            </TextField>
+            <Button variant="outlined" ref={addButtonRef} onClick={() => {
+              if (itemName.length != 0 && isNaN(itemName)){
                 addItem(itemName)
                 setItemName('')
                 handleClose()
+                handleOpenMessage()
               } else {
+                setItemName('')
                 handleClose()
               }
             }}>Add</Button>
@@ -130,7 +163,7 @@ export default function Home() {
       <Button variant='contained' onClick={() =>{
         handleOpen()
       }}> Add New Item</Button>
-      <Box border='1px solid #333'>
+      <Box border='1px solid #333' bgcolor='white'>
         <Box 
           width='800px' 
           height='100px' 
@@ -180,6 +213,18 @@ export default function Home() {
             </Box>
           ))}
         </Stack>
+        {/* Added temporary label show up on screen confirming add the item */}
+        <Snackbar
+          ref={addButtonRef}
+          open={openMessage}
+          autoHideDuration={2000}
+          onClose={handleCloseMessage}
+          message={message}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          ContentProps={{
+            sx: { display: 'block', textAlign: 'center' }
+          }}
+        />
       </Box>
     </Box>
   );
