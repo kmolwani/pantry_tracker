@@ -112,6 +112,9 @@ export default function Home() {
       flexDirection='column'
       gap={2}
       bgcolor='#786'
+      sx={{
+        flexDirection:{xs: 'column', md: 'column'}
+      }}
     >
       <Modal open={open} onClose={handleClose}>
         <Box
@@ -163,18 +166,37 @@ export default function Home() {
       <Button variant='contained' onClick={() =>{
         handleOpen()
       }}> Add New Item</Button>
-      <Box border='1px solid #333' bgcolor='white'>
+      <Box 
+        border='1px solid #333' 
+        bgcolor='white'
+        sx={{
+          transform: "translate(0%, 0%)", 
+          width: {xs: '100%', sm: '80%'}
+        }}
+      >
         <Box 
-          width='800px' 
+          width='100%' 
           height='100px' 
           bgcolor='#ADD8E6'
           alignItems='center' 
           justifyContent='center' 
           display='flex'
+          sx={{
+            flexDirection:'column'
+          }}
         >
           <Typography variant='h2' color='#333'>Pantry Items</Typography>
         </Box>
-        <Stack width='800px' height='300px' spacing={2} overflow='auto'>
+        <Stack 
+          width='100%' 
+          height='300px' 
+          spacing={2} 
+          overflow='auto'
+          display='auto'
+          sx={{
+            flexDirection:'column'
+          }}
+        >
           {inventory.map(({name, quantity}) => (
             <Box 
               key={name} 
@@ -184,7 +206,7 @@ export default function Home() {
               alignItems='center' 
               justifyContent='space-between'
               bgColor='#f0f0f0' 
-              padding={5}
+              padding={2}
             >
               <Typography variant="h5" color='#333' textAlign='center'>
                 {name.charAt(0).toUpperCase() + name.slice(1)}
