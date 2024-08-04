@@ -112,6 +112,7 @@ export default function Home() {
       flexDirection='column'
       gap={2}
       bgcolor='#786'
+      overflow='scroll'
       sx={{
         flexDirection:{xs: 'column', md: 'column'}
       }}
@@ -189,12 +190,13 @@ export default function Home() {
         </Box>
         <Stack 
           width='100%' 
-          height='300px' 
+          // height='300px' 
           spacing={2} 
           overflow='auto'
           display='auto'
           sx={{
-            flexDirection:'column'
+            flexDirection:'column',
+            height: {xs: '200px', sm: '200px', lg: '300px'}
           }}
         >
           {inventory.map(({name, quantity}) => (
